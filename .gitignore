@@ -1,0 +1,8 @@
+.env*
+redisdata*
+quiz.csv
+.idea
+pgdata
+docker-compose.override.yml
+postgres-data
+*.tar.gz

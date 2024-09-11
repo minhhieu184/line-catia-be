@@ -1,0 +1,77 @@
+services:
+  core:
+    container_name: wwtbam_core
+    env_file:
+      - ./.env
+    networks:
+      - wwtbam
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    volumes:
+      - ./.env:/app/.env
+
+  redis:
+    container_name: wwtbam_redis
+    image: redis:7.2.4-alpine
+    volumes:
+      - ./redisdata:/data
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - wwtbam
+
+  postgres:
+    user: 'root'
+    container_name: wwtbam_postgres
+    image: timescale/timescaledb-ha:pg15-latest
+    shm_size: 4g
+    networks:
+      - wwtbam
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - ./pgdata/production/data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 1s
+      timeout: 2s
+      retries: 5
+  # directus:
+  #   image: directus/directus:10.13.1
+  #   volumes:
+  #     - ./database:/directus/database
+  #     - ./uploads:/directus/uploads
+  #     - ./extensions:/directus/extensions
+  #   environment:
+  #     SECRET: "replace-with-secure-random-value"
+  #     ADMIN_EMAIL: "test@example.com"
+  #     ADMIN_PASSWORD: "test"
+  #     WEBSOCKETS_ENABLED: "true"
+  #     DB_CLIENT: "pg"
+  #     DB_HOST: "localhost"
+  #     DB_PORT: "port"
+  #     DB_DATABASE: "wwtbam_prod"
+  #     DB_USER: "postgres"
+  #     DB_PASSWORD: "postgres"
+networks:
+  wwtbam:
+    name: wwtbam

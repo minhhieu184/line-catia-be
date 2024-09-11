@@ -2,14 +2,15 @@ package services
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"millionaire/internal/assets"
 	"millionaire/internal/models"
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	tele "gopkg.in/telebot.v3"
-
-	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
 const (
@@ -31,28 +32,36 @@ func NewBot(token string) (*Bot, error) {
 	return &Bot{token}, nil
 }
 
-func (bot *Bot) ValidateInitData(dataStr string) (*models.UserFromAuth, error) {
+func (bot *Bot) Validate(idToken string) (*models.UserFromAuth, error) {
 	// err := initdata.Validate(dataStr, bot.token, 0)
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	println("dataStr", dataStr)
+	println("idToken", idToken)
 
-	data, err := initdata.Parse(dataStr)
+	// decode idToken jwt
+	data, err := jwt.Parse(idToken, func(token *jwt.Token) (interface{}, error) {
+		return "6e61a64875ea78c130df3680d7991466", nil
+	})
 	if err != nil {
+		println("err", err.Error())
 		return nil, err
 	}
 
+	b, _ := json.MarshalIndent(data, "", "    ")
+	fmt.Println("sdfjkbsdf")
+	fmt.Println(string(b))
+
 	return &models.UserFromAuth{
-		ID:           data.User.ID,
-		Username:     data.User.Username,
-		FirstName:    data.User.FirstName,
-		LastName:     data.User.LastName,
-		IsBot:        data.User.IsBot,
-		IsPremium:    data.User.IsPremium,
-		LanguageCode: data.User.LanguageCode,
-		PhotoURL:     data.User.PhotoURL,
+		// ID:           data.User.ID,
+		// Username:     data.User.Username,
+		// FirstName:    data.User.FirstName,
+		// LastName:     data.User.LastName,
+		// IsBot:        data.User.IsBot,
+		// IsPremium:    data.User.IsPremium,
+		// LanguageCode: data.User.LanguageCode,
+		// PhotoURL:     data.User.PhotoURL,
 	}, nil
 }
 

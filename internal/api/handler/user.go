@@ -31,6 +31,9 @@ func (gr *groupUser) Me(c echo.Context) error {
 
 	refCodeParam := c.QueryParam("refCode")
 	user, err = serviceUser.Me(ctx, user, refCodeParam)
+	if err != nil {
+		return httpx.RestAbort(c, nil, err)
+	}
 
 	return httpx.RestAbort(c, user, nil)
 }

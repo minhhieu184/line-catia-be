@@ -42,6 +42,10 @@ func New(cfg *Config) (http.Handler, error) {
 		if err != nil {
 			return nil, err
 		}
+		authentication, err := do.Invoke[*services.Authentication](cfg.Container)
+		if err != nil {
+			return nil, err
+		}
 		cors := middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins:     cfg.Origins,
 			AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
@@ -50,13 +54,21 @@ func New(cfg *Config) (http.Handler, error) {
 		})
 
 		routesAPIv1.Use(cors)
-		routesAPIv1.Use(Authn(bot)) // Authn will NOT terminate unauthenticated request.
+
+		routesAPIv1Me := routesAPIv1.Group("/user/me")
+		routesAPIv1Me.Use(Authn(bot))
+		{
+			m := groupUser{cfg.Container}
+			routesAPIv1Me.GET("", m.Me)
+		}
+
+		routesAPIv1.Use(Authn(authentication)) // Authn will NOT terminate unauthenticated request.
 		routesAPIv1.GET("", Hello)
 
 		routesAPIv1User := routesAPIv1.Group("/user")
 		{
 			u := groupUser{cfg.Container}
-			routesAPIv1User.GET("/me", u.Me)
+			// routesAPIv1User.GET("/me", u.Me)
 			routesAPIv1User.POST("/boost/claim/:source", u.ClaimUserBoost)
 			routesAPIv1User.GET("/friends", u.GetFriendList)
 			routesAPIv1User.POST("/boost/claim-all", u.ClaimAllBoosts)

@@ -21,7 +21,7 @@ var ctxKeyAuthUser ctxKey = "AUTH_USER"
 var ctxKeyAuthPartner ctxKey = "AUTH_PARTNER"
 
 func Authn(verifier interface {
-	ValidateInitData(dataStr string) (*models.UserFromAuth, error)
+	Validate(dataStr string) (*models.UserFromAuth, error)
 },
 ) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -41,9 +41,7 @@ func Authn(verifier interface {
 				return next(c)
 			}
 
-			println("token", token)
-
-			user, err := verifier.ValidateInitData(token)
+			user, err := verifier.Validate(token)
 			if err != nil {
 				// although it's a client error, we don't want to detailed information
 				//nolint:errcheck

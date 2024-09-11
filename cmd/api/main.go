@@ -44,6 +44,7 @@ func init() {
 func main() {
 	vs, err := env.EnvsRequired(
 		"BOT_TOKEN",
+		"JWT_SECRET",
 		"CHANCES",
 		"DB_DSN",
 		"TON_APP_DOMAIN",
@@ -285,6 +286,10 @@ func NewContainer(vs map[string]string) *do.Injector {
 
 	do.Provide(injector, func(i *do.Injector) (*services.Bot, error) {
 		return services.NewBot(vs["BOT_TOKEN"])
+	})
+
+	do.Provide(injector, func(i *do.Injector) (*services.Authentication, error) {
+		return services.NewAuthentication(vs["JWT_SECRET"])
 	})
 
 	do.Provide(injector, func(i *do.Injector) (*services.ServiceGame, error) {

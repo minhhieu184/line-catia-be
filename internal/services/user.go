@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -119,6 +120,8 @@ func (service *ServiceUser) FindOrCreateUser(ctx context.Context, userAuth *mode
 		return nil, errors.New("userAuth is nil")
 	}
 	user, _ := service.FindUserByID(ctx, userAuth.ID)
+	b, _ := json.MarshalIndent(user, "", "    ")
+	fmt.Println(string(b))
 
 	if user != nil {
 		if (user.Username != strings.ToLower(userAuth.Username)) ||

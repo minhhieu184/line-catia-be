@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"millionaire/internal/assets"
 	"millionaire/internal/models"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hiendaovinh/toolkit/pkg/errorx"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -59,6 +61,12 @@ func (bot *Bot) Validate(idToken string) (*models.UserFromAuth, error) {
 	if err != nil {
 		return nil, err
 	}
+	if res.StatusCode != 200 {
+		println("Line verify failed " + string(body))
+		return nil, errorx.Wrap(errors.New("Line verify failed "+string(body)), errorx.Authn)
+	}
+
+	println("line verify", string(body))
 	var lineVerifyResponse LineVerifyResponse
 	if err := json.Unmarshal(body, &lineVerifyResponse); err != nil { // Parse []byte to go struct pointer
 		return nil, err

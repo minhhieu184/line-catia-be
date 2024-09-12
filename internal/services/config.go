@@ -72,14 +72,12 @@ func (service *ServiceConfig) GetIntConfig(ctx context.Context, key string, defa
 	callback := func() (int, error) {
 		config, err := datastore.GetConfigByKey(ctx, service.readonlyPostgresDB, key)
 		if err != nil {
-			println("err bbbb", err.Error())
 
 			return defaultValue, err
 		}
 
 		intValue, err := strconv.Atoi(config.Value)
 		if err != nil {
-			println("err aaaaa", err.Error())
 			return defaultValue, err
 		}
 
@@ -88,8 +86,7 @@ func (service *ServiceConfig) GetIntConfig(ctx context.Context, key string, defa
 
 	value, err := caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyConfig(key), CACHE_TTL_5_MINS, callback)
 	if err != nil {
-		println("err qqqqq", err.Error())
-		return defaultValue, nil
+		return defaultValue, err
 	}
 
 	return value, nil

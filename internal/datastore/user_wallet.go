@@ -42,7 +42,7 @@ func FindUserWalletByEVMWallet(ctx context.Context, db *bun.DB, evmWallet string
 	return &userWallet, nil
 }
 
-func FindUserWalletByUserID(ctx context.Context, db *bun.DB, userID int64) (*models.UserWallet, error) {
+func FindUserWalletByUserID(ctx context.Context, db *bun.DB, userID string) (*models.UserWallet, error) {
 	var userWallet models.UserWallet
 	err := db.NewSelect().Model(&userWallet).Where("id = ?", userID).Scan(ctx)
 	if err != nil {

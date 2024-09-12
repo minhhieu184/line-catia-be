@@ -99,7 +99,7 @@ func SetGame(ctx context.Context, db *bun.DB, game *models.Game) error {
 func GetEnabledGames(ctx context.Context, db *bun.DB) ([]models.Game, error) {
 	var games []models.Game
 	err := db.NewSelect().Model(&games).Where("enabled = ? and is_public = ?", true, true).Order("priority DESC").Scan(ctx)
-	println("games", len(games))
+	println("games LEN", len(games))
 	if err != nil {
 		return nil, err
 	}

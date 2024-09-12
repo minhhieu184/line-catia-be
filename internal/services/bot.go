@@ -3,13 +3,15 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"io"
 	"millionaire/internal/assets"
 	"millionaire/internal/models"
+	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -24,6 +26,17 @@ Explore quizzes, tasks & minigames and earn rewards.
 `
 )
 
+type LineVerifyResponse struct {
+	Iss     string `json:"iss"`
+	Sub     string `json:"sub"`
+	Aud     string `json:"aud"`
+	Exp     int64  `json:"exp"`
+	Iat     int64  `json:"iat"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Picture string `json:"picture"`
+}
+
 type Bot struct {
 	token string
 }
@@ -33,35 +46,30 @@ func NewBot(token string) (*Bot, error) {
 }
 
 func (bot *Bot) Validate(idToken string) (*models.UserFromAuth, error) {
-	// err := initdata.Validate(dataStr, bot.token, 0)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	println("idToken", idToken)
-
-	// decode idToken jwt
-	data, err := jwt.Parse(idToken, func(token *jwt.Token) (interface{}, error) {
-		return "6e61a64875ea78c130df3680d7991466", nil
-	})
+	data := url.Values{}
+	data.Set("id_token", idToken)
+	data.Set("client_id", os.Getenv("LINE_CHANNEL_ID"))
+	ioReader := strings.NewReader(data.Encode())
+	res, err := http.Post(LINE_API_BASE_URL+"/verify", "application/x-www-form-urlencoded", ioReader)
 	if err != nil {
-		println("err", err.Error())
 		return nil, err
 	}
-
-	b, _ := json.MarshalIndent(data, "", "    ")
-	fmt.Println("sdfjkbsdf")
-	fmt.Println(string(b))
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	var lineVerifyResponse LineVerifyResponse
+	if err := json.Unmarshal(body, &lineVerifyResponse); err != nil { // Parse []byte to go struct pointer
+		return nil, err
+	}
+	b, _ := json.MarshalIndent(lineVerifyResponse, "", "    ")
+	println("lineVerifyResponse", string(b))
 
 	return &models.UserFromAuth{
-		// ID:           data.User.ID,
-		// Username:     data.User.Username,
-		// FirstName:    data.User.FirstName,
-		// LastName:     data.User.LastName,
-		// IsBot:        data.User.IsBot,
-		// IsPremium:    data.User.IsPremium,
-		// LanguageCode: data.User.LanguageCode,
-		// PhotoURL:     data.User.PhotoURL,
+		ID:       lineVerifyResponse.Sub,
+		Username: lineVerifyResponse.Name,
+		PhotoURL: lineVerifyResponse.Picture,
 	}, nil
 }
 

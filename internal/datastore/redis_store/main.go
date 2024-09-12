@@ -23,28 +23,28 @@ const (
 	SOCIAL_CHECK_COLDDOWN = 2 * time.Minute
 )
 
-func dbKeyGameSession(gameSlug string, userID int64, sessionID *string, isAll bool) string {
+func dbKeyGameSession(gameSlug string, userID string, sessionID *string, isAll bool) string {
 	if isAll {
-		return fmt.Sprintf("game:%s:session:%d:*", strings.ToLower(gameSlug), userID)
+		return fmt.Sprintf("game:%s:session:%s:*", strings.ToLower(gameSlug), userID)
 	}
 
 	if sessionID != nil {
-		return fmt.Sprintf("game:%s:session:%d:%s", strings.ToLower(gameSlug), userID, *sessionID)
+		return fmt.Sprintf("game:%s:session:%s:%s", strings.ToLower(gameSlug), userID, *sessionID)
 	}
 
 	return ""
 }
 
-func dbKeyUserSocialTaskGame(gameSlug string, userID int64) string {
-	return fmt.Sprintf("user:social_task_bonus:%d:%s", userID, gameSlug)
+func dbKeyUserSocialTaskGame(gameSlug string, userID string) string {
+	return fmt.Sprintf("user:social_task_bonus:%s:%s", userID, gameSlug)
 }
 
-func dbKeyCheckSocialTaskCount(userId int64) string {
-	return fmt.Sprintf("user:check_social_task_count:%d", userId)
+func dbKeyCheckSocialTaskCount(userId string) string {
+	return fmt.Sprintf("user:check_social_task_count:%s", userId)
 }
 
-func dbKeyUserGameSession(gameSlug string, userID int64) string {
-	return fmt.Sprintf("game_session:%s:%d", strings.ToLower(gameSlug), userID)
+func dbKeyUserGameSession(gameSlug string, userID string) string {
+	return fmt.Sprintf("game_session:%s:%s", strings.ToLower(gameSlug), userID)
 }
 
 func dbKeyMostPlayedSession(gameId string) string {
@@ -67,20 +67,20 @@ func dbKeyLeaderboard(gameSlug string) string {
 	return fmt.Sprintf("leaderboard:%s", strings.ToLower(gameSlug))
 }
 
-func dbKeyJoinedSocialLink(userID int64, link string) string {
-	return fmt.Sprintf("user:joined_social_link:%d:%s", userID, link)
+func dbKeyJoinedSocialLink(userID string, link string) string {
+	return fmt.Sprintf("user:joined_social_link:%s:%s", userID, link)
 }
 
-func dbKeyUserLastNotify(userId int64) string {
-	return fmt.Sprintf("user:%d:last_notify", userId)
+func dbKeyUserLastNotify(userId string) string {
+	return fmt.Sprintf("user:%s:last_notify", userId)
 }
 
 func dbKeyQuestionGroup(gameSlug string, group string) string {
 	return fmt.Sprintf("game:%s:question:group:%s", strings.ToLower(gameSlug), group)
 }
 
-func dbKeyUserMoonGacha(userID int64, moonTime time.Time) string {
-	return fmt.Sprintf("user:%d:moon-gacha:%s", userID, moonTime.Format("2006-01-02 15:04:05"))
+func dbKeyUserMoonGacha(userID string, moonTime time.Time) string {
+	return fmt.Sprintf("user:%s:moon-gacha:%s", userID, moonTime.Format("2006-01-02 15:04:05"))
 }
 
 func dbKeyMoon() string {
@@ -91,8 +91,8 @@ func dbKeyInvoiceMessage(invoceId string) string {
 	return fmt.Sprintf("invoice-test:%s", strings.ToLower(invoceId))
 }
 
-func dbKeySendMessageUser(userId int64) string {
-	return fmt.Sprintf("sent_message:%d", userId)
+func dbKeySendMessageUser(userId string) string {
+	return fmt.Sprintf("sent_message:%s", userId)
 }
 
 func GetQuestionGroup(ctx context.Context, cmd redis.Cmdable, gameSlug string, group string) ([]string, error) {
@@ -127,7 +127,7 @@ func DeleteGameQuestionGroups(ctx context.Context, cmd redis.UniversalClient, ga
 }
 
 // deprecated
-func GetGameSessionByID(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID int64, sessionID string) (*internal.GameSession, error) {
+func GetGameSessionByID(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID string, sessionID string) (*internal.GameSession, error) {
 	var v *internal.GameSession
 	b, err := cmd.Get(ctx, dbKeyGameSession(gameSlug, userID, &sessionID, false)).Bytes()
 	if err != nil {
@@ -147,7 +147,7 @@ func GetGameSessionByID(ctx context.Context, cmd redis.Cmdable, gameSlug string,
 	return v, err
 }
 
-func GetCurrentGameSessionByUser(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID int64) (*models.GameSession, error) {
+func GetCurrentGameSessionByUser(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID string) (*models.GameSession, error) {
 	var v *models.GameSession
 	b, err := cmd.Get(ctx, dbKeyUserGameSession(gameSlug, userID)).Bytes()
 	if err != nil {
@@ -159,7 +159,7 @@ func GetCurrentGameSessionByUser(ctx context.Context, cmd redis.Cmdable, gameSlu
 }
 
 func SaveGameSession(ctx context.Context, cmd redis.Cmdable, v *models.GameSession) (*models.GameSession, error) {
-	if v.GameSlug == "" || v.UserID == 0 {
+	if v.GameSlug == "" || v.UserID == "" {
 		return nil, errors.New("invalid session")
 	}
 
@@ -195,7 +195,7 @@ func SaveGameSession(ctx context.Context, cmd redis.Cmdable, v *models.GameSessi
 // }
 
 // deprecated
-func GetGameListSessions(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID int64) ([]*internal.GameSession, error) {
+func GetGameListSessions(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID string) ([]*internal.GameSession, error) {
 	var gameSessions []*internal.GameSession
 
 	iter := cmd.Scan(ctx, 0, dbKeyGameSession(gameSlug, userID, nil, true), 0).Iterator()
@@ -227,7 +227,7 @@ func GetGameListSessions(ctx context.Context, cmd redis.Cmdable, gameSlug string
 	return gameSessions, nil
 }
 
-func SetUserLastNotify(ctx context.Context, cmd redis.Cmdable, userID int64, lastNotify time.Time) error {
+func SetUserLastNotify(ctx context.Context, cmd redis.Cmdable, userID string, lastNotify time.Time) error {
 	err := cmd.Set(ctx, dbKeyUserLastNotify(userID), lastNotify, 0).Err()
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func SetUserLastNotify(ctx context.Context, cmd redis.Cmdable, userID int64, las
 	return nil
 }
 
-func GetUserLastNotify(ctx context.Context, cmd redis.Cmdable, userID int64) (time.Time, error) {
+func GetUserLastNotify(ctx context.Context, cmd redis.Cmdable, userID string) (time.Time, error) {
 	result, err := cmd.Get(ctx, dbKeyUserLastNotify(userID)).Result()
 	if err != nil {
 		return time.Time{}, err
@@ -276,7 +276,7 @@ func GetLeaderboard(ctx context.Context, cmd redis.Cmdable, gameSlug string, num
 
 	var results []*models.LeaderboardItem
 	for i, item := range items {
-		id, _ := strconv.ParseInt(item.Member.(string), 10, 64)
+		id := item.Member.(string)
 		results = append(results, &models.LeaderboardItem{
 			UserId: id,
 			Score:  item.Score,
@@ -340,7 +340,7 @@ func GetCurrentUpdateUser(ctx context.Context, cmd redis.Cmdable, scoreThreshold
 }
 
 func GetRankWithScore(ctx context.Context, cmd redis.Cmdable, gameSlug string, user *models.User) (redis.RankScore, error) {
-	rank, err := cmd.ZRevRankWithScore(ctx, dbKeyLeaderboard(gameSlug), strconv.FormatInt(user.ID, 10)).Result()
+	rank, err := cmd.ZRevRankWithScore(ctx, dbKeyLeaderboard(gameSlug), user.ID).Result()
 	if err != nil {
 		return redis.RankScore{}, err
 	}
@@ -349,7 +349,7 @@ func GetRankWithScore(ctx context.Context, cmd redis.Cmdable, gameSlug string, u
 }
 
 func GetScore(ctx context.Context, cmd redis.Cmdable, gameSlug string, user *models.User) (float64, error) {
-	score, err := cmd.ZScore(ctx, dbKeyLeaderboard(gameSlug), strconv.FormatInt(user.ID, 10)).Result()
+	score, err := cmd.ZScore(ctx, dbKeyLeaderboard(gameSlug), user.ID).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -359,7 +359,7 @@ func GetScore(ctx context.Context, cmd redis.Cmdable, gameSlug string, user *mod
 }
 
 func GetRank(ctx context.Context, cmd redis.Cmdable, gameSlug string, user *models.User) (int64, error) {
-	rank, err := cmd.ZRevRank(ctx, dbKeyLeaderboard(gameSlug), strconv.FormatInt(user.ID, 10)).Result()
+	rank, err := cmd.ZRevRank(ctx, dbKeyLeaderboard(gameSlug), user.ID).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -367,7 +367,7 @@ func GetRank(ctx context.Context, cmd redis.Cmdable, gameSlug string, user *mode
 	return rank, nil
 }
 
-func GetJoinSocial(ctx context.Context, cmd redis.Cmdable, userID int64, socialLink string) (bool, error) {
+func GetJoinSocial(ctx context.Context, cmd redis.Cmdable, userID string, socialLink string) (bool, error) {
 	_, err := cmd.Get(ctx, dbKeyJoinedSocialLink(userID, socialLink)).Bytes()
 	if err != nil {
 		return false, err
@@ -376,7 +376,7 @@ func GetJoinSocial(ctx context.Context, cmd redis.Cmdable, userID int64, socialL
 	return true, err
 }
 
-func SetJoinSocial(ctx context.Context, cmd redis.Cmdable, userID int64, socialLink string) error {
+func SetJoinSocial(ctx context.Context, cmd redis.Cmdable, userID string, socialLink string) error {
 	err := cmd.Set(ctx, dbKeyJoinedSocialLink(userID, socialLink), true, 0).Err()
 	if err != nil {
 		return err
@@ -501,7 +501,7 @@ func GetMostMinusPoint(ctx context.Context, cmd redis.Cmdable, gameSlug string, 
 	return results, nil
 }
 
-func CheckSocialTaskLimit(ctx context.Context, cmd redis.Cmdable, userID int64) (bool, error) {
+func CheckSocialTaskLimit(ctx context.Context, cmd redis.Cmdable, userID string) (bool, error) {
 	number, err := cmd.Get(ctx, dbKeyCheckSocialTaskCount(userID)).Result()
 	if err != nil && err != redis.Nil {
 		return false, err
@@ -528,7 +528,7 @@ func CheckSocialTaskLimit(ctx context.Context, cmd redis.Cmdable, userID int64) 
 	return false, nil
 }
 
-func SetUserSocialTaskGame(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID int64) (bool, error) {
+func SetUserSocialTaskGame(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID string) (bool, error) {
 	err := cmd.Set(ctx, dbKeyUserSocialTaskGame(gameSlug, userID), true, 0).Err()
 	if err != nil {
 		return false, err
@@ -537,7 +537,7 @@ func SetUserSocialTaskGame(ctx context.Context, cmd redis.Cmdable, gameSlug stri
 	return true, nil
 }
 
-func GetUserSocialTaskGame(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID int64) (bool, error) {
+func GetUserSocialTaskGame(ctx context.Context, cmd redis.Cmdable, gameSlug string, userID string) (bool, error) {
 	_, err := cmd.Get(ctx, dbKeyUserSocialTaskGame(gameSlug, userID)).Bytes()
 	if err != nil {
 		return false, err
@@ -618,7 +618,7 @@ func GetMoon(ctx context.Context, cmd redis.Cmdable) (*models.Moon, error) {
 	return v, err
 }
 
-func SetUserMoonGacha(ctx context.Context, cmd redis.Cmdable, userID int64, moonTime time.Time) error {
+func SetUserMoonGacha(ctx context.Context, cmd redis.Cmdable, userID string, moonTime time.Time) error {
 	err := cmd.Set(ctx, dbKeyUserMoonGacha(userID, moonTime), true, time.Hour*24).Err()
 	if err != nil {
 		return err
@@ -627,7 +627,7 @@ func SetUserMoonGacha(ctx context.Context, cmd redis.Cmdable, userID int64, moon
 	return nil
 }
 
-func GetUserMoonGacha(ctx context.Context, cmd redis.Cmdable, userID int64, moonTime time.Time) (bool, error) {
+func GetUserMoonGacha(ctx context.Context, cmd redis.Cmdable, userID string, moonTime time.Time) (bool, error) {
 	_, err := cmd.Get(ctx, dbKeyUserMoonGacha(userID, moonTime)).Bytes()
 	if err != nil {
 		return false, err
@@ -661,7 +661,7 @@ func GetInvoiceMessage(ctx context.Context, cmd redis.Cmdable, invoiceId string)
 	return v, err
 }
 
-func SetSendMessageUser(ctx context.Context, cmd redis.Cmdable, userId int64) error {
+func SetSendMessageUser(ctx context.Context, cmd redis.Cmdable, userId string) error {
 	err := cmd.Set(ctx, dbKeySendMessageUser(userId), true, time.Hour*24).Err()
 	if err != nil {
 		return err
@@ -670,7 +670,7 @@ func SetSendMessageUser(ctx context.Context, cmd redis.Cmdable, userId int64) er
 	return nil
 }
 
-func GetSendMessageUser(ctx context.Context, cmd redis.Cmdable, userId int64) (bool, error) {
+func GetSendMessageUser(ctx context.Context, cmd redis.Cmdable, userId string) (bool, error) {
 	_, err := cmd.Get(ctx, dbKeySendMessageUser(userId)).Bytes()
 	if err != nil {
 		return false, err

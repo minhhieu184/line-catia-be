@@ -3,12 +3,10 @@ package services
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"millionaire/internal/pkg/ton_utils"
-	"strconv"
 	"strings"
 	"time"
 
@@ -120,8 +118,6 @@ func (service *ServiceUser) FindOrCreateUser(ctx context.Context, userAuth *mode
 		return nil, errors.New("userAuth is nil")
 	}
 	user, _ := service.FindUserByID(ctx, userAuth.ID)
-	b, _ := json.MarshalIndent(user, "", "    ")
-	fmt.Println(string(b))
 
 	if user != nil {
 		if (user.Username != strings.ToLower(userAuth.Username)) ||
@@ -166,24 +162,24 @@ func (service *ServiceUser) FindOrCreateUser(ctx context.Context, userAuth *mode
 		return user, err
 	}
 
-	go func() {
-		err = service.bot.SendWelcomeMsg(user.ID)
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	// go func() {
+	// 	err = service.bot.SendWelcomeMsg(user.ID)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 	}
+	// }()
 
 	return user, nil
 }
 
-func (service *ServiceUser) FindUserByID(ctx context.Context, userID int64) (*models.User, error) {
+func (service *ServiceUser) FindUserByID(ctx context.Context, userID string) (*models.User, error) {
 	callback := func() (*models.User, error) {
 		return datastore.FindUserByID(ctx, service.readonlyPostgresDB, userID)
 	}
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUser(userID), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUser) FindUserByIDNoCache(ctx context.Context, userID int64) (*models.User, error) {
+func (service *ServiceUser) FindUserByIDNoCache(ctx context.Context, userID string) (*models.User, error) {
 	return datastore.FindUserByID(ctx, service.readonlyPostgresDB, userID)
 }
 
@@ -231,20 +227,20 @@ func (service *ServiceUser) AddReferenceCode(ctx context.Context, user *models.U
 		return err
 	}
 
-	username := fmt.Sprintf("@%s", user.Username)
-	if user.Username == "" {
-		username = strings.TrimSpace(fmt.Sprintf("%s %s", user.FirstName, user.LastName))
-	}
+	// username := fmt.Sprintf("@%s", user.Username)
+	// if user.Username == "" {
+	// 	username = strings.TrimSpace(fmt.Sprintf("%s %s", user.FirstName, user.LastName))
+	// }
 
-	go func() {
-		if inviter.ID < 100 {
-			return
-		}
-		err = service.bot.SendMsg(inviter.ID, fmt.Sprintf(MessageNewUser, username))
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	// go func() {
+	// 	if inviter.ID < 100 {
+	// 		return
+	// 	}
+	// 	err = service.bot.SendMsg(inviter.ID, fmt.Sprintf(MessageNewUser, username))
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 	}
+	// }()
 
 	_, err = redis_store.SetLeaderboard(ctx, service.redisDB, LEADERBOARD_REFERRAL, &models.LeaderboardItem{
 		UserId: inviter.ID,
@@ -266,7 +262,7 @@ func (service *ServiceUser) AddReferenceCode(ctx context.Context, user *models.U
 	return err
 }
 
-func (service *ServiceUser) CountBoosts(ctx context.Context, userID int64) (int, error) {
+func (service *ServiceUser) CountBoosts(ctx context.Context, userID string) (int, error) {
 	count, err := datastore.CountUserBoosts(ctx, service.readonlyPostgresDB, userID)
 	if err != nil {
 		return 0, err
@@ -274,7 +270,7 @@ func (service *ServiceUser) CountBoosts(ctx context.Context, userID int64) (int,
 	return count, nil
 }
 
-func (service *ServiceUser) IsWinner(ctx context.Context, userID int64) (bool, error) {
+func (service *ServiceUser) IsWinner(ctx context.Context, userID string) (bool, error) {
 	user, err := service.FindUserByID(ctx, userID)
 	if err != nil {
 		return false, err
@@ -377,7 +373,7 @@ func (service *ServiceUser) Me(ctx context.Context, user *models.User, refCode s
 	return me, err
 }
 
-func (service *ServiceUser) GetUserGem(ctx context.Context, userID int64) (int, error) {
+func (service *ServiceUser) GetUserGem(ctx context.Context, userID string) (int, error) {
 	callback := func() (int, error) {
 		return datastore.GetUserTotalGem(ctx, service.readonlyPostgresDB, userID)
 	}
@@ -386,7 +382,7 @@ func (service *ServiceUser) GetUserGem(ctx context.Context, userID int64) (int, 
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserGems(userID), CACHE_TTL_1_HOUR, callback)
 }
 
-func (service *ServiceUser) GetUserGemByAction(ctx context.Context, userID int64, action string) (*models.UserGem, error) {
+func (service *ServiceUser) GetUserGemByAction(ctx context.Context, userID string, action string) (*models.UserGem, error) {
 	callback := func() (*models.UserGem, error) {
 		return datastore.GetUserGemByAction(ctx, service.readonlyPostgresDB, userID, action)
 	}
@@ -394,12 +390,12 @@ func (service *ServiceUser) GetUserGemByAction(ctx context.Context, userID int64
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserGemAction(userID, action), CACHE_TTL_1_HOUR, callback)
 }
 
-func (service *ServiceUser) GetUserGemNoCache(ctx context.Context, userID int64) (int, error) {
+func (service *ServiceUser) GetUserGemNoCache(ctx context.Context, userID string) (int, error) {
 	// User write db to prevent replica lag
 	return datastore.GetUserTotalGem(ctx, service.postgresDB, userID)
 }
 
-func (service *ServiceUser) GetUserGemFromTimeNoCache(ctx context.Context, userID int64, from *time.Time) (int, error) {
+func (service *ServiceUser) GetUserGemFromTimeNoCache(ctx context.Context, userID string, from *time.Time) (int, error) {
 	// User write db to prevent replica lag
 	return datastore.GetUserTotalGemFromTime(ctx, service.postgresDB, userID, from)
 }
@@ -433,8 +429,8 @@ func (service *ServiceUser) InsertUserGem(ctx context.Context, user *models.User
 	return nil
 }
 
-func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, userId int64, page int, limit int) error {
-	mutex := service.rs.NewMutex(LockKeyUserClaimBoost(userId, source))
+func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, userID string, page int, limit int) error {
+	mutex := service.rs.NewMutex(LockKeyUserClaimBoost(userID, source))
 	if err := mutex.TryLock(); err != nil {
 		return errorx.Wrap(ErrUserBoostLock, errorx.Invalid)
 	}
@@ -442,12 +438,13 @@ func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, u
 	// nolint:errcheck
 	defer mutex.Unlock()
 
-	inviteeId, err := strconv.ParseInt(source, 10, 64)
+	// inviteeId, err := strconv.ParseInt(source, 10, 64)
+	inviteeId := source
 
 	// TODO more condition when boost can come from other source in the future
-	if err != nil {
-		return errors.New("invalid source")
-	}
+	// if err != nil {
+	// 	return errors.New("invalid source")
+	// }
 
 	gem, err := service.GetUserGem(ctx, inviteeId)
 	if err != nil {
@@ -461,14 +458,14 @@ func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, u
 	}
 
 	// check if user already have a boost
-	hasBoost, err := service.CheckUserBoostExists(ctx, userId, source)
+	hasBoost, err := service.CheckUserBoostExists(ctx, userID, source)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
 
 	if !hasBoost {
 		userBoost := &models.UserBoost{
-			UserID:    userId,
+			UserID:    userID,
 			UsedAt:    nil,
 			CreatedAt: time.Now(),
 			Source:    source,
@@ -483,7 +480,7 @@ func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, u
 			return err
 		}
 
-		friendCache, err := service.GetUserFriendListPaging(ctx, userId, page, limit)
+		friendCache, err := service.GetUserFriendListPaging(ctx, userID, page, limit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -495,7 +492,7 @@ func (service *ServiceUser) ClaimUserBoost(ctx context.Context, source string, u
 			}
 		}
 
-		service.cache.Set(ctx, DBKeyUserFriendList(userId, page, limit), friendCache, CACHE_TTL_5_MINS)
+		service.cache.Set(ctx, DBKeyUserFriendList(userID, page, limit), friendCache, CACHE_TTL_5_MINS)
 	}
 
 	return nil
@@ -535,7 +532,7 @@ func (service *ServiceUser) ClaimAllAvailableBoostFromFriends(ctx context.Contex
 	var sources []string
 
 	for _, friend := range friendList {
-		sources = append(sources, fmt.Sprintf("%d", friend.ID))
+		sources = append(sources, friend.ID)
 	}
 
 	err = service.InsertBoostsWithSources(ctx, user, sources)
@@ -625,7 +622,7 @@ func (service *ServiceUser) ChangeLifelineBalance(ctx context.Context, user *mod
 	return service.ClearUserCache(ctx, user.ID)
 }
 
-func (service *ServiceUser) GetUserFriendListPaging(ctx context.Context, userID int64, page int, limit int) ([]*models.Friend, error) {
+func (service *ServiceUser) GetUserFriendListPaging(ctx context.Context, userID string, page int, limit int) ([]*models.Friend, error) {
 	callback := func() ([]*models.Friend, error) {
 		offset := page * limit
 		claimableFriends, err := datastore.GetUserFriendListPaging(ctx, service.readonlyPostgresDB, userID, limit, offset)
@@ -638,7 +635,7 @@ func (service *ServiceUser) GetUserFriendListPaging(ctx context.Context, userID 
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserFriendList(userID, page, limit), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUser) CountUserFriends(ctx context.Context, userID int64) (int, error) {
+func (service *ServiceUser) CountUserFriends(ctx context.Context, userID string) (int, error) {
 	callback := func() (int, error) {
 		return datastore.CountFriends(ctx, service.readonlyPostgresDB, userID)
 	}
@@ -646,7 +643,7 @@ func (service *ServiceUser) CountUserFriends(ctx context.Context, userID int64) 
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyFriendCount(userID), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUser) CheckUserBoostExists(ctx context.Context, userID int64, source string) (bool, error) {
+func (service *ServiceUser) CheckUserBoostExists(ctx context.Context, userID string, source string) (bool, error) {
 	callback := func() (bool, error) {
 		return datastore.CheckUserBoostExists(ctx, service.readonlyPostgresDB, userID, source)
 	}
@@ -654,12 +651,12 @@ func (service *ServiceUser) CheckUserBoostExists(ctx context.Context, userID int
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyBoostExist(userID, source), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUser) DeleteFriendListCaching(ctx context.Context, userID int64) error {
-	caching.DeleteKeys(ctx, service.redisDBCache, fmt.Sprintf("user_friend_list:%d:*", userID))
+func (service *ServiceUser) DeleteFriendListCaching(ctx context.Context, userID string) error {
+	caching.DeleteKeys(ctx, service.redisDBCache, fmt.Sprintf("user_friend_list:%s:*", userID))
 	return nil
 }
 
-func (service *ServiceUser) FindUserWalletByUserID(ctx context.Context, userID int64) (*models.UserWallet, error) {
+func (service *ServiceUser) FindUserWalletByUserID(ctx context.Context, userID string) (*models.UserWallet, error) {
 	callback := func() (*models.UserWallet, error) {
 		return datastore.FindUserWalletByUserID(ctx, service.readonlyPostgresDB, userID)
 	}
@@ -667,7 +664,7 @@ func (service *ServiceUser) FindUserWalletByUserID(ctx context.Context, userID i
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserWallet(userID), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUser) ClearUserGemCache(ctx context.Context, userID int64) error {
+func (service *ServiceUser) ClearUserGemCache(ctx context.Context, userID string) error {
 	err := service.cache.Delete(ctx, DBKeyUserGems(userID))
 	if err != nil {
 		log.Println(err)
@@ -744,7 +741,7 @@ func (service *ServiceUser) ConnectTonWallet(ctx context.Context, user *models.U
 	return service.ClearMeCache(ctx, user.ID)
 }
 
-func (service *ServiceUser) ClearUserCache(ctx context.Context, userID int64) error {
+func (service *ServiceUser) ClearUserCache(ctx context.Context, userID string) error {
 	err := service.cache.Delete(ctx, DBKeyMe(userID))
 	if err != nil {
 		log.Println(err)
@@ -758,7 +755,7 @@ func (service *ServiceUser) ClearUserCache(ctx context.Context, userID int64) er
 	return nil
 }
 
-func (service *ServiceUser) ClearMeCache(ctx context.Context, userID int64) error {
+func (service *ServiceUser) ClearMeCache(ctx context.Context, userID string) error {
 	err := service.cache.Delete(ctx, DBKeyMe(userID))
 	if err != nil {
 		log.Println(err)

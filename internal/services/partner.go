@@ -92,7 +92,7 @@ func (service *ServicePartner) GetPartner(ctx context.Context, slug string) (*mo
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyPartner(slug), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServicePartner) CheckJoinedUser(ctx context.Context, partner *models.Partner, userID int64, refCode int64, minGem int) (*models.PartnerResponse, error) {
+func (service *ServicePartner) CheckJoinedUser(ctx context.Context, partner *models.Partner, userID string, refCode string, minGem int) (*models.PartnerResponse, error) {
 	err := service.limiter.Allow(ctx, LimitKeyParner(partner.Slug), redis_rate.PerMinute(PARTNER_RATE_LIMIT_PER_MINUTE))
 	if err != nil {
 		if err.Error() == limiter.ErrRateLimited.Error() {
@@ -114,7 +114,7 @@ func (service *ServicePartner) CheckJoinedUser(ctx context.Context, partner *mod
 	return response, err
 }
 
-func (service *ServicePartner) getJoinedUserInfo(ctx context.Context, userID int64, refCode int64, minGem int) (*models.PartnerResponse, error) {
+func (service *ServicePartner) getJoinedUserInfo(ctx context.Context, userID string, refCode string, minGem int) (*models.PartnerResponse, error) {
 	var res = &models.PartnerResponse{}
 
 	serviceUser, err := do.Invoke[*ServiceUser](service.container)
@@ -140,7 +140,7 @@ func (service *ServicePartner) getJoinedUserInfo(ctx context.Context, userID int
 		}
 	}
 
-	if refCode >= 0 {
+	if refCode != "-1" {
 		user, err := serviceUser.FindUserByID(ctx, userID)
 		if err == nil {
 			res.Ref = (user.InviterID != nil) && (*user.InviterID == refCode)

@@ -10,7 +10,7 @@ type Reward struct {
 	bun.BaseModel `bun:"table:reward"`
 	ID            int                    `bun:"id,pk,autoincrement" json:"id"`
 	Campaign      string                 `bun:"campaign" json:"campaign"`
-	UserID        int64                  `bun:"user_id" json:"user_id"`
+	UserID        string                 `bun:"user_id" json:"user_id"`
 	Gem           int                    `bun:"gem" json:"gem"`
 	Star          int                    `bun:"star" json:"star"`
 	Lifeline      int                    `bun:"lifeline" json:"lifeline"`

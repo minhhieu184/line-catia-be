@@ -52,7 +52,7 @@ func CreateTableUser(ctx context.Context, db *bun.DB) error {
 	return nil
 }
 
-func FindUserByID(ctx context.Context, db *bun.DB, userID int64) (*models.User, error) {
+func FindUserByID(ctx context.Context, db *bun.DB, userID string) (*models.User, error) {
 	var user models.User
 	err := db.NewSelect().Model(&user).Where("id = ?", userID).Scan(ctx)
 	if err != nil {
@@ -61,7 +61,7 @@ func FindUserByID(ctx context.Context, db *bun.DB, userID int64) (*models.User, 
 	return &user, nil
 }
 
-func CheckUserExists(ctx context.Context, db *bun.DB, userID int64) (bool, error) {
+func CheckUserExists(ctx context.Context, db *bun.DB, userID string) (bool, error) {
 	var user models.User
 	err := db.NewSelect().Model(&user).Where("id = ?", userID).Scan(ctx)
 	if err != nil {
@@ -132,7 +132,7 @@ func GetUsersByInviter(ctx context.Context, db *bun.DB, inviterID int64) ([]*mod
 	return users, nil
 }
 
-func CountInviteesByUserId(ctx context.Context, db *bun.DB, userID int64) (int, error) {
+func CountInviteesByUserId(ctx context.Context, db *bun.DB, userID string) (int, error) {
 	count, err := db.NewSelect().Model((*models.User)(nil)).Where("inviter_id = ?", userID).Count(ctx)
 	if err != nil {
 		return 0, err
@@ -245,7 +245,7 @@ func GetUsersByLimit(ctx context.Context, db *bun.DB, limit, offset int) ([]*mod
 	return users, nil
 }
 
-func AddInviteRef(ctx context.Context, db *bun.DB, inviteeID int64, inviterID int64) error {
+func AddInviteRef(ctx context.Context, db *bun.DB, inviteeID string, inviterID string) error {
 	return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		if _, err := tx.NewUpdate().
 			Model((*models.User)(nil)).
@@ -266,7 +266,7 @@ func AddInviteRef(ctx context.Context, db *bun.DB, inviteeID int64, inviterID in
 	})
 }
 
-func ChangeUserLifelineBalance(ctx context.Context, db *bun.DB, userID int64, number int) error {
+func ChangeUserLifelineBalance(ctx context.Context, db *bun.DB, userID string, number int) error {
 	_, err := db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("lifeline_balance = lifeline_balance + ?", number).
@@ -275,7 +275,7 @@ func ChangeUserLifelineBalance(ctx context.Context, db *bun.DB, userID int64, nu
 	return err
 }
 
-func GetUserFriendList(ctx context.Context, db *bun.DB, userID int64) ([]*models.Friend, error) {
+func GetUserFriendList(ctx context.Context, db *bun.DB, userID string) ([]*models.Friend, error) {
 	var friends []*models.Friend
 	err := db.NewSelect().
 		Model(&friends).
@@ -292,7 +292,7 @@ func GetUserFriendList(ctx context.Context, db *bun.DB, userID int64) ([]*models
 	return friends, nil
 }
 
-func GetUserFriendListPaging(ctx context.Context, db *bun.DB, userID int64, limit, offset int) ([]*models.Friend, error) {
+func GetUserFriendListPaging(ctx context.Context, db *bun.DB, userID string, limit, offset int) ([]*models.Friend, error) {
 	var friends []*models.Friend
 
 	err := db.NewSelect().
@@ -314,7 +314,7 @@ func GetUserFriendListPaging(ctx context.Context, db *bun.DB, userID int64, limi
 	return friends, nil
 }
 
-func GetOnlyClaimableFriends(ctx context.Context, db *bun.DB, userID int64) ([]*models.Friend, error) {
+func GetOnlyClaimableFriends(ctx context.Context, db *bun.DB, userID string) ([]*models.Friend, error) {
 	var friends []*models.Friend
 
 	err := db.NewSelect().
@@ -332,7 +332,7 @@ func GetOnlyClaimableFriends(ctx context.Context, db *bun.DB, userID int64) ([]*
 	return friends, nil
 }
 
-func CountFriends(ctx context.Context, db *bun.DB, userID int64) (int, error) {
+func CountFriends(ctx context.Context, db *bun.DB, userID string) (int, error) {
 	count, err := db.NewSelect().
 		ColumnExpr("ur.id, ur.first_name, ur.last_name, ur.username, us.gems, (us.gems IS NOT NULL AND us.gems > 15) as validated, ub.id is not null as claimed").TableExpr("\"user\" ur").
 		Join("LEFT JOIN (SELECT u.id, SUM(ug.gems) gems FROM \"user\" u LEFT JOIN user_gem ug ON u.id = ug.user_id WHERE ug.user_id IN (SELECT u.id FROM \"user\" u WHERE u.inviter_id=?) GROUP BY u.id) us ON ur.id = us.id", userID).
@@ -348,7 +348,7 @@ func CountFriends(ctx context.Context, db *bun.DB, userID int64) (int, error) {
 	return count, nil
 }
 
-func UpdateUserInvitees(ctx context.Context, db *bun.DB, userID int64, totalInvites int) error {
+func UpdateUserInvitees(ctx context.Context, db *bun.DB, userID string, totalInvites int) error {
 	_, err := db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("total_invites = ?", totalInvites).
@@ -357,7 +357,7 @@ func UpdateUserInvitees(ctx context.Context, db *bun.DB, userID int64, totalInvi
 	return err
 }
 
-func UpdateUserStatus(ctx context.Context, db *bun.DB, userID int64, status string) error {
+func UpdateUserStatus(ctx context.Context, db *bun.DB, userID string, status string) error {
 	_, err := db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("chat_status = ?", status).

@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	bun.BaseModel         `bun:"table:user"`
-	ID                    int64      `bun:"id,pk" json:"id"`
+	ID                    string     `bun:"id,pk" json:"id"`
 	FirstName             string     `bun:"first_name" json:"first_name"`
 	IsBot                 bool       `bun:"is_bot" json:"-"`
 	IsPremium             bool       `bun:"is_premium" json:"-"`
@@ -18,7 +18,7 @@ type User struct {
 	PhotoURL              string     `bun:"photo_url" json:"photo_url"`
 	CreatedAt             time.Time  `bun:"created_at,default:current_timestamp" json:"created_at"`
 	UpdatedAt             time.Time  `bun:"updated_at" json:"updated_at"`
-	InviterID             *int64     `bun:"inviter_id" json:"inviter_id"`
+	InviterID             *string     `bun:"inviter_id" json:"inviter_id"`
 	TotalInvites          int64      `bun:"total_invites" json:"total_invites"`
 	RefCode               *string    `bun:"ref_code" json:"ref_code"`
 	ExtraSessions         int        `bun:"extra_session" json:"-"`           // deprecated, moved to UserGame
@@ -47,7 +47,7 @@ type Lifeline struct {
 
 // UserFromAuth only use in middleware
 type UserFromAuth struct {
-	ID           int64  `json:"id"`
+	ID           string  `json:"id"`
 	FirstName    string `json:"first_name"`
 	IsBot        bool   `json:"is_bot"`
 	IsPremium    bool   `json:"is_premium"`
@@ -58,7 +58,7 @@ type UserFromAuth struct {
 }
 
 type Friend struct {
-	ID        int64  `bun:"id" json:"id"`
+	ID        string  `bun:"id" json:"id"`
 	FirstName string `bun:"first_name" json:"first_name"`
 	LastName  string `bun:"last_name" json:"last_name"`
 	Username  string `bun:"username" json:"username"`

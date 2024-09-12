@@ -16,7 +16,7 @@ func CreateTableLifelineHistory(ctx context.Context, db *bun.DB) error {
 	return nil
 }
 
-func GetLifelineHistory(ctx context.Context, db *bun.DB, userID int64) ([]models.LifelineHistory, error) {
+func GetLifelineHistory(ctx context.Context, db *bun.DB, userID string) ([]models.LifelineHistory, error) {
 	var history []models.LifelineHistory
 	err := db.NewSelect().Model(&history).Where("user_id = ?", userID).Scan(ctx)
 	if err != nil {

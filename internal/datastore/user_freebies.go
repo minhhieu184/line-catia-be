@@ -43,7 +43,7 @@ func InsertUserFreebies(ctx context.Context, db *bun.DB, userFreebie *models.Use
 	return nil
 }
 
-func InsertMultipleUserFreebies(ctx context.Context, db *bun.DB, userId int64) ([]*models.UserFreebie, error) {
+func InsertMultipleUserFreebies(ctx context.Context, db *bun.DB, userId string) ([]*models.UserFreebie, error) {
 	freebies := make([]*models.UserFreebie, 0)
 	now := time.Now()
 	for _, freebie := range models.Freebies {
@@ -66,7 +66,7 @@ func InsertMultipleUserFreebies(ctx context.Context, db *bun.DB, userId int64) (
 	return freebies, nil
 }
 
-func GetUserFreebies(ctx context.Context, db *bun.DB, userID int64, action string) (*models.UserFreebie, error) {
+func GetUserFreebies(ctx context.Context, db *bun.DB, userID string, action string) (*models.UserFreebie, error) {
 	var userFreebie models.UserFreebie
 	err := db.NewSelect().Model(&userFreebie).Where("user_id = ?", userID).Where("action = ?", action).Scan(ctx)
 	if err != nil {
@@ -84,7 +84,7 @@ func UpdateUserFreebies(ctx context.Context, db *bun.DB, userFreebie *models.Use
 	return nil
 }
 
-func GetAllUserFreebies(ctx context.Context, db *bun.DB, userID int64) ([]*models.UserFreebie, error) {
+func GetAllUserFreebies(ctx context.Context, db *bun.DB, userID string) ([]*models.UserFreebie, error) {
 	var userFreebies []*models.UserFreebie
 	err := db.NewSelect().Model(&userFreebies).Where("user_id = ?", userID).Scan(ctx)
 	if err != nil {

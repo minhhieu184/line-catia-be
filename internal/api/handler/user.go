@@ -1,10 +1,14 @@
 package handler
 
 import (
+	"encoding/json"
 	"millionaire/internal/models"
 	"millionaire/internal/services"
+	"os"
 	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/hiendaovinh/toolkit/pkg/errorx"
 	"github.com/hiendaovinh/toolkit/pkg/httpx-echo"
 	"github.com/labstack/echo/v4"
@@ -35,7 +39,27 @@ func (gr *groupUser) Me(c echo.Context) error {
 		return httpx.RestAbort(c, nil, err)
 	}
 
-	return httpx.RestAbort(c, user, nil)
+	b, _ := json.MarshalIndent(user, "", "    ")
+	println("skdjncjid", string(b))
+
+	claims := &services.CustomClaims{
+		ID:       user.ID,
+		Username: user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return httpx.RestAbort(c, nil, err)
+	}
+
+	return httpx.RestAbort(c, map[string]interface{}{
+		"token": tokenString,
+		"user":  user,
+	}, nil)
 }
 
 func (gr *groupUser) ClaimUserBoost(c echo.Context) error {

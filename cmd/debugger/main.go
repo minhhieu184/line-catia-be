@@ -11,7 +11,6 @@ import (
 	"millionaire/internal/pkg/caching"
 	"millionaire/internal/services"
 	"os"
-	"strconv"
 
 	"github.com/redis/go-redis/v9"
 
@@ -108,7 +107,8 @@ func commandDeleteUser() *cli.Command {
 				}
 			}
 
-			userid, err := strconv.ParseInt(c.String("userid"), 10, 64)
+			// userid, err := strconv.ParseInt(c.String("userid"), 10, 64)
+			userid := c.String("userid")
 
 			if err != nil {
 				log.Fatal(err)
@@ -238,7 +238,8 @@ func commandClearUserSocialTask() *cli.Command {
 				log.Fatal("userid is required")
 			}
 
-			userid, err := strconv.ParseInt(useridString, 10, 64)
+			// userid, err := strconv.ParseInt(useridString, 10, 64)
+			userid := useridString
 
 			if err != nil {
 				log.Fatal(err)

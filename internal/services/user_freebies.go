@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -75,7 +76,7 @@ func NewServiceUserFreebies(container *do.Injector) (*ServiceUserFreebies, error
 	return &ServiceUserFreebies{container, db, postgresDB, readonlyPostgresDB, cache, rs, readonlyCache, serviceConfig}, nil
 }
 
-func (service *ServiceUserFreebies) GetOrNewUserFreebie(ctx context.Context, name string, action string, userID int64, icon string, amount int) (*models.UserFreebie, error) {
+func (service *ServiceUserFreebies) GetOrNewUserFreebie(ctx context.Context, name string, action string, userID string, icon string, amount int) (*models.UserFreebie, error) {
 	freebie, err := service.GetUserFreebie(ctx, userID, action)
 	if err != nil && err != redis.Nil && err != sql.ErrNoRows {
 		return nil, err
@@ -99,7 +100,7 @@ func (service *ServiceUserFreebies) GetOrNewUserFreebie(ctx context.Context, nam
 	return freebie, nil
 }
 
-func (service *ServiceUserFreebies) GetOrNewUserFreebies(ctx context.Context, userID int64) ([]*models.UserFreebie, error) {
+func (service *ServiceUserFreebies) GetOrNewUserFreebies(ctx context.Context, userID string) ([]*models.UserFreebie, error) {
 	freebies, err := service.GetAllUserFreebies(ctx, userID)
 	if err != nil && err != redis.Nil && err != sql.ErrNoRows {
 		return nil, err
@@ -119,7 +120,7 @@ func (service *ServiceUserFreebies) GetOrNewUserFreebies(ctx context.Context, us
 	return freebies, nil
 }
 
-func (service *ServiceUserFreebies) GetUserFreebie(ctx context.Context, userID int64, action string) (*models.UserFreebie, error) {
+func (service *ServiceUserFreebies) GetUserFreebie(ctx context.Context, userID string, action string) (*models.UserFreebie, error) {
 	callback := func() (*models.UserFreebie, error) {
 		return datastore.GetUserFreebies(ctx, service.readonlyPostgresDB, userID, action)
 	}
@@ -127,7 +128,7 @@ func (service *ServiceUserFreebies) GetUserFreebie(ctx context.Context, userID i
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserFreebies(userID, action), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUserFreebies) GetAllUserFreebies(ctx context.Context, userID int64) ([]*models.UserFreebie, error) {
+func (service *ServiceUserFreebies) GetAllUserFreebies(ctx context.Context, userID string) ([]*models.UserFreebie, error) {
 	callback := func() ([]*models.UserFreebie, error) {
 		return datastore.GetAllUserFreebies(ctx, service.readonlyPostgresDB, userID)
 	}
@@ -141,8 +142,13 @@ func (service *ServiceUserFreebies) ClaimFreebies(ctx context.Context, user *mod
 		return err
 	}
 
+	b, _ := json.MarshalIndent(userFreebie, "", "    ")
+	println("userFreebie", string(b))
+
 	if userFreebie.Action == action {
+		println("userFreebie 1")
 		if userFreebie.Countdown.After(time.Now()) {
+			println("userFreebie 2")
 			return errors.New("freebie is not available to claim now")
 		}
 
@@ -151,17 +157,22 @@ func (service *ServiceUserFreebies) ClaimFreebies(ctx context.Context, user *mod
 			return err
 		}
 
+		println("userFreebie 3")
+
 		if action == models.ACTION_CLAIM_GEM {
+			println("userFreebie 4")
 			if userFreebie.Amount == 0 {
 				userFreebie.Amount = GEM_AMOUNT
 			}
+			println("userFreebie 5")
 			serviceUser.InsertUserGem(ctx, user, userFreebie.Amount, fmt.Sprintf("freebies:%s:%s", models.ACTION_CLAIM_GEM, time.Now().Format("2006-01-02T15:04:05")))
-
+			println("userFreebie 6")
 			timeGem, err := service.serviceConfig.GetIntConfig(ctx, CONFIG_FREEBIE_GEM_COUNTDOWN, 5)
 			if err != nil {
+				println("err xxx", err.Error())
 				return err
 			}
-
+			println("userFreebie 7", timeGem)
 			userFreebie.Countdown = time.Now().Add(time.Duration(timeGem) * time.Minute)
 		}
 
@@ -214,20 +225,24 @@ func (service *ServiceUserFreebies) ClaimFreebies(ctx context.Context, user *mod
 
 		err = datastore.UpdateUserFreebies(ctx, service.postgresDB, userFreebie)
 		if err != nil {
+			println("userFreebie 8")
 			return err
 		}
 
 		//delete cache
 		err = service.cache.Delete(ctx, DBKeyUserFreebies(user.ID, action))
 		if err != nil {
+			println("userFreebie 9")
 			log.Println(err)
 		}
 
 		err = service.cache.Delete(ctx, DBKeyUserAllFreebies(user.ID))
 		if err != nil {
+			println("userFreebie 10")
 			log.Println(err)
 		}
 	}
+	println("userFreebie 11")
 
 	return nil
 }

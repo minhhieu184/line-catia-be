@@ -6,12 +6,13 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"github.com/redis/go-redis/v9"
-	"github.com/tonkeeper/tongo"
 	"log"
 	"millionaire/internal/datastore/redis_store"
 	"millionaire/internal/models"
 	"time"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/tonkeeper/tongo"
 
 	"encoding/base64"
 	"encoding/binary"
@@ -78,7 +79,7 @@ func CreateMessage(message *models.TonProofMessage) ([]byte, error) {
 	return res[:], nil
 }
 
-func CheckProof(ctx context.Context, dbRedis redis.UniversalClient, address tongo.AccountID, userID int64, domain string, nonce string, tonProofReq *models.TonProofMessage) (bool, error) {
+func CheckProof(ctx context.Context, dbRedis redis.UniversalClient, address tongo.AccountID, userID string, domain string, nonce string, tonProofReq *models.TonProofMessage) (bool, error) {
 	if len(nonce) != 12 {
 		return false, errors.New("invalid nonce")
 	}

@@ -44,7 +44,7 @@ var Freebies = []UserFreebie{
 type UserFreebie struct {
 	bun.BaseModel `bun:"table:user_freebie"`
 	ID            int64     `bun:"id,pk,autoincrement" json:"id"`
-	UserID        int64     `bun:"user_id" json:"user_id"`
+	UserID        string    `bun:"user_id" json:"user_id"`
 	Name          string    `bun:"name" json:"name"`
 	Countdown     time.Time `bun:"countdown" json:"countdown"`
 	Action        string    `bun:"action" json:"action"`

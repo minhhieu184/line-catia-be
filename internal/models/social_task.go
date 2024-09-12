@@ -42,8 +42,8 @@ type Link struct {
 }
 
 type UserTask struct {
-	ID        int64 `bun:"id,pk,autoincrement" json:"id"`
-	UserID    int64 `bun:"user_id" json:"user_id"`
-	TaskID    int64 `bun:"task_id" json:"task_id"`
-	Completed bool  `bun:"completed" json:"completed"`
+	ID        int64  `bun:"id,pk,autoincrement" json:"id"`
+	UserID    string `bun:"user_id" json:"user_id"`
+	TaskID    int64  `bun:"task_id" json:"task_id"`
+	Completed bool   `bun:"completed" json:"completed"`
 }

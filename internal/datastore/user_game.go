@@ -41,7 +41,7 @@ func CreateTableUserGame(ctx context.Context, db *bun.DB) error {
 	return nil
 }
 
-func GetUserGame(ctx context.Context, db *bun.DB, userID int64, gameSlug string) (*models.UserGame, error) {
+func GetUserGame(ctx context.Context, db *bun.DB, userID string, gameSlug string) (*models.UserGame, error) {
 	var userGame models.UserGame
 	err := db.NewSelect().Model(&userGame).Where("user_id = ?", userID).Where("game_slug = ?", gameSlug).Scan(ctx)
 	if err != nil {

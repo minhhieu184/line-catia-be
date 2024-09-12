@@ -45,7 +45,7 @@ func InsertUserGem(ctx context.Context, db *bun.DB, userGem *models.UserGem) err
 	return nil
 }
 
-func GetUserTotalGem(ctx context.Context, db *bun.DB, userID int64) (int, error) {
+func GetUserTotalGem(ctx context.Context, db *bun.DB, userID string) (int, error) {
 	var totalGem models.TotalGem
 	err := db.NewSelect().
 		ColumnExpr("SUM(gems) as total_gems").
@@ -61,7 +61,7 @@ func GetUserTotalGem(ctx context.Context, db *bun.DB, userID int64) (int, error)
 	return totalGem.TotalGems, nil
 }
 
-func GetUserTotalGemFromTime(ctx context.Context, db *bun.DB, userID int64, from *time.Time) (int, error) {
+func GetUserTotalGemFromTime(ctx context.Context, db *bun.DB, userID string, from *time.Time) (int, error) {
 	var totalGem models.TotalGem
 	err := db.NewSelect().
 		ColumnExpr("SUM(gems) as total_gems").
@@ -97,7 +97,7 @@ func GetUserTotalGemListFromTime(ctx context.Context, db *bun.DB, from *time.Tim
 	return totalGem, nil
 }
 
-func GetUserGemByAction(ctx context.Context, db *bun.DB, userID int64, action string) (*models.UserGem, error) {
+func GetUserGemByAction(ctx context.Context, db *bun.DB, userID string, action string) (*models.UserGem, error) {
 	var userGem models.UserGem
 	err := db.NewSelect().Model(&userGem).Where("user_id = ? AND action = ?", userID, action).Scan(ctx)
 	if err != nil {

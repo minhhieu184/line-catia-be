@@ -8,7 +8,7 @@ import (
 
 type GameScore struct {
 	GameID                   string `json:"game_id"`
-	UserID                   int64  `json:"user_id"`
+	UserID                   string `json:"user_id"`
 	TotalSessions            int    `json:"total_sessions"`
 	TotalScore               int    `json:"total_score"`
 	TotalScoreCurrentSession int    `json:"total_score_current_session"`
@@ -44,7 +44,7 @@ type GameSession struct {
 	ID                   string                  `json:"id"`
 	Key                  string                  `json:"-"`
 	GameSlug             string                  `json:"game_id"`
-	UserID               int64                   `json:"user_id"`
+	UserID               string                  `json:"user_id"`
 	NextStep             int                     `json:"next_step"`
 	CurrentQuestion      *models.Question        `json:"current_question"`
 	CurrentQuestionScore int                     `json:"current_question_score"`
@@ -61,7 +61,7 @@ type GameSessionLegacy struct {
 	ID                   string                        `json:"id"`
 	Key                  string                        `json:"-"`
 	GameSlug             string                        `json:"game_id"`
-	UserID               int64                         `json:"user_id"`
+	UserID               string                        `json:"user_id"`
 	NextStep             int                           `json:"next_step"`
 	CurrentQuestion      *models.QuestionLegacy        `json:"current_question"`
 	CurrentQuestionScore int                           `json:"current_question_score"`

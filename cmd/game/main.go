@@ -55,6 +55,7 @@ func commandGame() *cli.Command {
 			}
 
 			gameName := c.String("name")
+			println("gameName", gameName)
 
 			game := &models.Game{
 				Name:        gameName,
@@ -63,8 +64,9 @@ func commandGame() *cli.Command {
 				Questions:   nil,
 				Checkpoints: nil,
 				Logo:        "",
-				Enabled:     false,
+				Enabled:     true,
 				Config:      nil,
+				IsPublic:    true,
 			}
 
 			err = datastore.SetGame(ctx, db, game)

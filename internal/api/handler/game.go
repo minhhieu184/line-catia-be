@@ -51,6 +51,7 @@ func (gr *groupGame) FindOrCreateSession(c echo.Context) error {
 	if err != nil {
 		return httpx.RestAbort(c, nil, err)
 	}
+	println("user id xcv", user.ID)
 
 	session, err := serviceGame.FindOrCreateSession(ctx, c.Param("game"), user)
 	if err != nil {
@@ -275,7 +276,6 @@ func (gr *groupGame) BurnAssistance(c echo.Context) error {
 }
 
 func (gr *groupGame) GetGames(c echo.Context) error {
-	println("get games")
 	serviceGame, err := do.Invoke[*services.ServiceGame](gr.container)
 	if err != nil {
 		return httpx.RestAbort(c, nil, errorx.Wrap(err, errorx.Service))

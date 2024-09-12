@@ -21,7 +21,7 @@ func CreateTableReward(ctx context.Context, db *bun.DB) error {
 	return nil
 }
 
-func GetAvaiableRewardByUserID(ctx context.Context, db *bun.DB, userID int64) ([]models.Reward, error) {
+func GetAvaiableRewardByUserID(ctx context.Context, db *bun.DB, userID string) ([]models.Reward, error) {
 	var rewards []models.Reward
 	err := db.NewSelect().Model(&rewards).
 		Where("user_id = ?", userID).

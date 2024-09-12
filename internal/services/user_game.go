@@ -94,7 +94,7 @@ func (service *ServiceUserGame) GetUserGame(ctx context.Context, user *models.Us
 	return nil, err
 }
 
-func (service *ServiceUserGame) AddNewUserGame(ctx context.Context, userID int64, gameSlug string) (*models.UserGame, error) {
+func (service *ServiceUserGame) AddNewUserGame(ctx context.Context, userID string, gameSlug string) (*models.UserGame, error) {
 	now := time.Now()
 	userGame := &models.UserGame{
 		UserID:                userID,
@@ -124,7 +124,7 @@ func (service *ServiceUserGame) GetUserGameSessionSumary(ctx context.Context, us
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyUserGameSessionSumary(userGame.GameSlug, userGame.UserID), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceUserGame) GetUserGameSessionSumaryByGameSlug(ctx context.Context, gameSlug string, userId int64) (*models.UserGameSessionSumary, error) {
+func (service *ServiceUserGame) GetUserGameSessionSumaryByGameSlug(ctx context.Context, gameSlug string, userId string) (*models.UserGameSessionSumary, error) {
 	callback := func() (*models.UserGameSessionSumary, error) {
 		return datastore.GetUserGameSessionSumary(ctx, service.readonlyPostgresDB, gameSlug, userId)
 	}

@@ -22,7 +22,8 @@ func (gr *groupPartner) CheckUserJoined(c echo.Context) error {
 	}
 
 	userIdStr := c.QueryParam("user_id")
-	userId, _ := strconv.ParseInt(userIdStr, 10, 64)
+	// userId, _ := strconv.ParseInt(userIdStr, 10, 64)
+	userId := userIdStr
 
 	servicePartner, err := do.Invoke[*services.ServicePartner](gr.container)
 	if err != nil {
@@ -30,9 +31,10 @@ func (gr *groupPartner) CheckUserJoined(c echo.Context) error {
 	}
 
 	refCodeStr := c.QueryParam("ref_code")
-	refCode := int64(-1)
+	refCode := "-1"
 	if refCodeStr != "" {
-		refCode, _ = strconv.ParseInt(refCodeStr, 10, 64)
+		// refCode, _ = strconv.ParseInt(refCodeStr, 10, 64)
+		refCode = refCodeStr
 	}
 
 	minGemStr := c.QueryParam("min_gem")

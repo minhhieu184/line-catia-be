@@ -43,7 +43,7 @@ func CreateTableUserBoost(ctx context.Context, db *bun.DB) error {
 	return nil
 }
 
-func CountUserBoosts(ctx context.Context, db *bun.DB, userID int64) (int, error) {
+func CountUserBoosts(ctx context.Context, db *bun.DB, userID string) (int, error) {
 	count, err := db.NewSelect().Model((*models.UserBoost)(nil)).Where("user_id = ?", userID).Where("used = false").Where("validated = true").Count(ctx)
 	if err != nil {
 		return 0, err
@@ -52,7 +52,7 @@ func CountUserBoosts(ctx context.Context, db *bun.DB, userID int64) (int, error)
 	return count, nil
 }
 
-func UseBoost(ctx context.Context, db *bun.DB, userId int64, usedFor string) error {
+func UseBoost(ctx context.Context, db *bun.DB, userId string, usedFor string) error {
 	// Get the avaiable boost that used_at is null
 	// TODO: lock the row
 	var boost models.UserBoost
@@ -76,7 +76,7 @@ func UseBoost(ctx context.Context, db *bun.DB, userId int64, usedFor string) err
 	return nil
 }
 
-func SetValidateUserBoost(ctx context.Context, db *bun.DB, userId int64, source string) error {
+func SetValidateUserBoost(ctx context.Context, db *bun.DB, userId string, source string) error {
 	_, err := db.NewUpdate().Model((*models.UserBoost)(nil)).Set("validated = true").Where("user_id = ? and source = ? and validated = false", userId, source).Exec(ctx)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func CreateMultipleBoost(ctx context.Context, db *bun.DB, userBoosts []*models.U
 	return nil
 }
 
-func CheckUserBoostExists(ctx context.Context, db *bun.DB, userId int64, source string) (bool, error) {
+func CheckUserBoostExists(ctx context.Context, db *bun.DB, userId string, source string) (bool, error) {
 	var boost models.UserBoost
 	err := db.NewSelect().Model(&boost).Where("user_id = ? and source = ?", userId, source).Scan(ctx)
 	if err != nil {

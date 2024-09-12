@@ -561,7 +561,7 @@ func commandUserBoostMigrate() *cli.Command {
 
 			now := time.Now()
 
-			refCount := map[int64]int{}
+			refCount := map[string]int{}
 
 			for {
 				users, err := datastore.GetUsersSortedByCreatedAt(ctx, dbPostgres, limit, offset)
@@ -595,7 +595,7 @@ func commandUserBoostMigrate() *cli.Command {
 						userBoost := &models.UserBoost{
 							UserID:    *user.InviterID,
 							CreatedAt: now,
-							Source:    strconv.FormatInt(user.ID, 10),
+							Source:    user.ID,
 							Validated: validated,
 						}
 
@@ -637,7 +637,7 @@ func commandUserInviteesMigrate() *cli.Command {
 			limit := 100
 			offset := 0
 
-			refCount := map[int64]int{}
+			refCount := map[string]int{}
 
 			for {
 				users, err := datastore.GetUsersSortedByCreatedAt(ctx, dbPostgres, limit, offset)
@@ -684,14 +684,12 @@ func commandUserInviteesMigrate() *cli.Command {
 }
 
 func getDb() (*bun.DB, error) {
-	fmt.Println("xxxxxxxxxxx")
 	fmt.Println(os.Getenv("DB_DSN"))
 	sqldb := sql.OpenDB(pgdriver.NewConnector(
 		pgdriver.WithDSN(os.Getenv("DB_DSN")),
 		pgdriver.WithPassword(os.Getenv("DB_PASSWORD")),
 	))
 
-	fmt.Println("yyyyyyyyyyy")
 	db := bun.NewDB(sqldb, pgdialect.New())
 	return db, nil
 }
@@ -738,7 +736,8 @@ func commandInsertBoosts() *cli.Command {
 					break
 				}
 
-				userID, err := strconv.ParseInt(row[0], 10, 64)
+				// userID, err := strconv.ParseInt(row[0], 10, 64)
+				userID := row[0]
 				if err != nil {
 					return err
 				}

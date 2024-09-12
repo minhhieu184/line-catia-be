@@ -86,7 +86,7 @@ func (service *ServiceSocial) GetTasks(ctx context.Context, gameSlug string) (*m
 	return task, nil
 }
 
-func (service *ServiceSocial) GetUserTasks(ctx context.Context, userID int64, gameSlug string) (*models.SocialTask, error) {
+func (service *ServiceSocial) GetUserTasks(ctx context.Context, userID string, gameSlug string) (*models.SocialTask, error) {
 	callback := func() (*models.SocialTask, error) {
 		tasks, err := service.GetTasks(ctx, gameSlug)
 		if err != nil {
@@ -116,7 +116,7 @@ func (service *ServiceSocial) GetAvailableSocialTasks(ctx context.Context) ([]mo
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeyAllSocialTasks(), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceSocial) GetAvailableSocialTasksByUser(ctx context.Context, userID int64) ([]models.SocialTask, error) {
+func (service *ServiceSocial) GetAvailableSocialTasksByUser(ctx context.Context, userID string) ([]models.SocialTask, error) {
 	callback := func() ([]models.SocialTask, error) {
 		tasks, err := service.GetAvailableSocialTasks(ctx)
 		if err != nil {
@@ -200,7 +200,7 @@ func (service *ServiceSocial) checkSocialLink(ctx context.Context, user *models.
 	return joined, err
 }
 
-func (service *ServiceSocial) VerifyJoinTelegram(ctx context.Context, userID int64, socialLink string) (bool, error) {
+func (service *ServiceSocial) VerifyJoinTelegram(ctx context.Context, userID string, socialLink string) (bool, error) {
 	verify, err := redis_store.GetJoinSocial(ctx, service.redisDB, userID, socialLink)
 	if err == nil {
 		return verify, nil
@@ -244,11 +244,11 @@ func (service *ServiceSocial) VerifyJoinTelegram(ctx context.Context, userID int
 	return true, nil
 }
 
-func (service *ServiceSocial) IsJoinSocial(ctx context.Context, userID int64, socialLink string) (bool, error) {
+func (service *ServiceSocial) IsJoinSocial(ctx context.Context, userID string, socialLink string) (bool, error) {
 	return redis_store.GetJoinSocial(ctx, service.redisDB, userID, socialLink)
 }
 
-func (service *ServiceSocial) VerifySocialLinkWithoutChecking(ctx context.Context, userID int64, socialLink string) (bool, error) {
+func (service *ServiceSocial) VerifySocialLinkWithoutChecking(ctx context.Context, userID string, socialLink string) (bool, error) {
 	joined, _ := service.IsJoinSocial(ctx, userID, socialLink)
 	if joined {
 		return true, nil
@@ -288,7 +288,7 @@ func (service *ServiceSocial) GetSocialLink(ctx context.Context, linkID int, gam
 	return caching.UseCacheWithRO(ctx, service.readonlyCache, service.cache, DBKeySocialLink(linkID, gameSlug), CACHE_TTL_5_MINS, callback)
 }
 
-func (service *ServiceSocial) apiUserChannel(ctx context.Context, userID int64, channel string) (*TelegramUserChannel, error) {
+func (service *ServiceSocial) apiUserChannel(ctx context.Context, userID string, channel string) (*TelegramUserChannel, error) {
 	resp, err := service.httpClient(0).Get(
 		fmt.Sprintf("%s/bot%s/getChatMember?chat_id=@%s&user_id=%d", service.baseURL, os.Getenv("BOT_TOKEN"), channel, userID),
 		http.Header{},
@@ -307,9 +307,9 @@ func (service *ServiceSocial) apiUserChannel(ctx context.Context, userID int64, 
 	return body.Result, nil
 }
 
-func (service *ServiceSocial) VerifyAddedTeletop(ctx context.Context, userId int64, url string) (bool, error) {
+func (service *ServiceSocial) VerifyAddedTeletop(ctx context.Context, userID string, url string) (bool, error) {
 	//getjoin social and set join social
-	verify, err := redis_store.GetJoinSocial(ctx, service.redisDB, userId, url)
+	verify, err := redis_store.GetJoinSocial(ctx, service.redisDB, userID, url)
 	if err == nil {
 		return verify, nil
 	}
@@ -317,13 +317,13 @@ func (service *ServiceSocial) VerifyAddedTeletop(ctx context.Context, userId int
 		return false, err
 	}
 
-	added, err := service.apiTeletopAddedTask(userId)
+	added, err := service.apiTeletopAddedTask(userID)
 	if err != nil {
 		return false, err
 	}
 
 	if added {
-		err = redis_store.SetJoinSocial(ctx, service.redisDB, userId, url)
+		err = redis_store.SetJoinSocial(ctx, service.redisDB, userID, url)
 		if err != nil {
 			return false, err
 		}
@@ -334,9 +334,9 @@ func (service *ServiceSocial) VerifyAddedTeletop(ctx context.Context, userId int
 	return false, nil
 }
 
-func (service *ServiceSocial) apiTeletopAddedTask(userId int64) (bool, error) {
+func (service *ServiceSocial) apiTeletopAddedTask(userID string) (bool, error) {
 	resp, err := service.httpClient(0).Get(
-		fmt.Sprintf("https://api.teletop.xyz/users/%d/verify/%d", userId, TELETOP_CATIA_APP_ID),
+		fmt.Sprintf("https://api.teletop.xyz/users/%d/verify/%d", userID, TELETOP_CATIA_APP_ID),
 		http.Header{},
 	)
 	if err != nil {

@@ -29,7 +29,7 @@ type GameSession struct {
 	ID                 int        `bun:"id,pk,autoincrement" json:"id"`
 	LegacyID           string     `bun:"legacy_id" json:"legacy_id"`
 	GameSlug           string     `bun:"game_slug" json:"game_slug"`
-	UserID             int64      `bun:"user_id" json:"user_id"`
+	UserID             string     `bun:"user_id" json:"user_id"`
 	Score              int        `bun:"score" json:"score"`
 	BonusScore         int        `bun:"bonus_score" json:"bonus_score"`
 	TotalScore         int        `bun:"total_score" json:"total_score"`

@@ -61,7 +61,7 @@ func CreateGameSession(ctx context.Context, db *bun.DB, gameSession *models.Game
 	return nil
 }
 
-func GetGameListSessions(ctx context.Context, db *bun.DB, gameSlug string, userID int64) ([]models.GameSession, error) {
+func GetGameListSessions(ctx context.Context, db *bun.DB, gameSlug string, userID string) ([]models.GameSession, error) {
 	var gameSessions []models.GameSession
 	err := db.NewSelect().Model(&gameSessions).Where("user_id = ?", userID).Where("game_slug = ?", gameSlug).Scan(ctx)
 	if err != nil {
@@ -79,7 +79,7 @@ func GetGameSessionById(ctx context.Context, db *bun.DB, gameSessionID string) (
 	return &gameSession, nil
 }
 
-func GetLastUserGameSession(ctx context.Context, db *bun.DB, gameSlug string, userID int64) (*models.GameSession, error) {
+func GetLastUserGameSession(ctx context.Context, db *bun.DB, gameSlug string, userID string) (*models.GameSession, error) {
 	var gameSession models.GameSession
 	err := db.NewSelect().Model(&gameSession).Where("user_id = ?", userID).Where("game_slug = ?", gameSlug).Order("ended_at DESC NULLS LAST").Limit(1).Scan(ctx)
 	if err != nil {
@@ -130,7 +130,7 @@ func UpdateQuestionHistory(ctx context.Context, db *bun.DB, questionHistory *mod
 	return nil
 }
 
-func GetUserGameSessionSumary(ctx context.Context, db *bun.DB, gameSlug string, userID int64) (*models.UserGameSessionSumary, error) {
+func GetUserGameSessionSumary(ctx context.Context, db *bun.DB, gameSlug string, userID string) (*models.UserGameSessionSumary, error) {
 	var gameSessionSumary models.UserGameSessionSumary
 	// rows, err := db.QueryContext(ctx, "select sum(total_score) total_score, count(*) session_count from game_session ere user_id=? and game_slug=?", userID, gameSlug)
 	err := db.

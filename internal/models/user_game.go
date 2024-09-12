@@ -9,7 +9,7 @@ import (
 type UserGame struct {
 	bun.BaseModel         `bun:"table:user_game"`
 	ID                    int64      `bun:"id,pk,autoincrement" json:"id"`
-	UserID                int64      `bun:"user_id" json:"user_id"`
+	UserID                string     `bun:"user_id" json:"user_id"`
 	GameSlug              string     `bun:"game_slug" json:"game_slug"`
 	ExtraSessions         int        `bun:"extra_session" json:"extra_sessions"`
 	Countdown             *time.Time `bun:"countdown" json:"countdown"`

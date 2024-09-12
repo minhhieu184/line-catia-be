@@ -66,29 +66,31 @@ const (
 	KEY_SOCIAL_TASK = "social_task:%s:%s"
 
 	TELETOP_CATIA_APP_ID = 143
+
+	LINE_API_BASE_URL = "https://api.line.me/oauth2/v2.1"
 )
 
-func LockKeyUserGameSession(gameSlug string, userID int64) string {
+func LockKeyUserGameSession(gameSlug string, userID string) string {
 	return fmt.Sprintf("user_game_session:lock:%s:%d", gameSlug, userID)
 }
 
-func LockKeyUserBoost(userID int64) string {
+func LockKeyUserBoost(userID string) string {
 	return fmt.Sprintf("lock:user-boost:%d", userID)
 }
 
-func LockKeyUserClaimBoost(userID int64, source string) string {
+func LockKeyUserClaimBoost(userID string, source string) string {
 	return fmt.Sprintf("lock:user-claim-boost:%d,%s", userID, source)
 }
 
-func LockKeyUserClaimAllBoost(userID int64) string {
+func LockKeyUserClaimAllBoost(userID string) string {
 	return fmt.Sprintf("lock:user-claim-all-boost:%d", userID)
 }
 
-func LockKeyUserGame(gameSlug string, userID int64) string {
+func LockKeyUserGame(gameSlug string, userID string) string {
 	return fmt.Sprintf("lock:user-game:%s:%d", gameSlug, userID)
 }
 
-func LockKeyUserMoon(userID int64) string {
+func LockKeyUserMoon(userID string) string {
 	return fmt.Sprintf("lock:user-moon:%d", userID)
 }
 
@@ -106,11 +108,11 @@ func DBKeyGames() string {
 }
 
 // db
-func DBKeyUser(userID int64) string {
+func DBKeyUser(userID string) string {
 	return fmt.Sprintf("user:%d", userID)
 }
 
-func DBKeyMe(userID int64) string {
+func DBKeyMe(userID string) string {
 	return fmt.Sprintf("me:%d", userID)
 }
 
@@ -118,15 +120,15 @@ func DBKeyConfig(key string) string {
 	return fmt.Sprintf("config:%s", strings.ToLower(key))
 }
 
-func DBKeyLeaderboardByUser(name string, userID int64, limit int) string {
+func DBKeyLeaderboardByUser(name string, userID string, limit int) string {
 	return fmt.Sprintf("leaderboard_by_user:%s:%d:%d", strings.ToLower(name), userID, limit)
 }
 
-func DBKeyUserGameSessionSumary(gameSlug string, userID int64) string {
+func DBKeyUserGameSessionSumary(gameSlug string, userID string) string {
 	return fmt.Sprintf("user_game:sumary:%s:%d", gameSlug, userID)
 }
 
-func DBKeyLastUserGameSession(gameSlug string, userID int64) string {
+func DBKeyLastUserGameSession(gameSlug string, userID string) string {
 	return fmt.Sprintf("user_game:last_session:%s:%d", gameSlug, userID)
 }
 
@@ -142,15 +144,15 @@ func DBKeyGameSocialTasks(gameSlug string) string {
 	return fmt.Sprintf("social_task:game:%s", gameSlug)
 }
 
-func DBKeyUserPassedSocialTask(userID int64, gameSlug string) string {
+func DBKeyUserPassedSocialTask(userID string, gameSlug string) string {
 	return fmt.Sprintf("social_task:user:%d:%s:passed", userID, gameSlug)
 }
 
-func DBKeyUserSocialBonusScore(userID int64) string {
+func DBKeyUserSocialBonusScore(userID string) string {
 	return fmt.Sprintf("user:%d:social_bonus_score", userID)
 }
 
-func DBKeyUserGemAction(userID int64, action string) string {
+func DBKeyUserGemAction(userID string, action string) string {
 	return fmt.Sprintf("user_gem:%d:%s", userID, action)
 }
 
@@ -158,11 +160,11 @@ func DBKeySocialLink(linkID int, gameSlug string) string {
 	return fmt.Sprintf("social_link:%d:%s", linkID, gameSlug)
 }
 
-func DBKeyUserSocialTasks(userID int64, gameSlug string) string {
+func DBKeyUserSocialTasks(userID string, gameSlug string) string {
 	return fmt.Sprintf("social_task:user:%d:%s", userID, gameSlug)
 }
 
-func DBKeyUserSocialTask(userID int64) string {
+func DBKeyUserSocialTask(userID string) string {
 	return fmt.Sprintf("social_task:user:%d", userID)
 }
 
@@ -178,7 +180,7 @@ func DBKeyGameReduceTimePerBoost(gameSlug string) string {
 	return fmt.Sprintf("game:reduce_time_per_boost:%s", gameSlug)
 }
 
-func DBKeyUserGame(gameSlug string, userID int64) string {
+func DBKeyUserGame(gameSlug string, userID string) string {
 	return fmt.Sprintf("user_game:%s:%d", gameSlug, userID)
 }
 
@@ -186,31 +188,31 @@ func DBKeyQuestion(questionID int) string {
 	return fmt.Sprintf("question:%d", questionID)
 }
 
-func DBKeyUserFreebies(userID int64, action string) string {
+func DBKeyUserFreebies(userID string, action string) string {
 	return fmt.Sprintf("user_freebies:%d:%s", userID, action)
 }
 
-func DBKeyUserAllFreebies(userID int64) string {
+func DBKeyUserAllFreebies(userID string) string {
 	return fmt.Sprintf("user_freebies:%d", userID)
 }
 
-func DBKeyUserGems(userID int64) string {
+func DBKeyUserGems(userID string) string {
 	return fmt.Sprintf("user_gems:%d", userID)
 }
 
-func DBKeyUserSocialTaskVerify(userID int64, gameslug string, url string) string {
+func DBKeyUserSocialTaskVerify(userID string, gameslug string, url string) string {
 	return fmt.Sprintf("user:verify_join_social_link:%d:%s:%s", userID, gameslug, url)
 }
 
-func DBKeyUserFriendList(userID int64, page int, limit int) string {
+func DBKeyUserFriendList(userID string, page int, limit int) string {
 	return fmt.Sprintf("user_friend_list:%d:%d:%d", userID, page, limit)
 }
 
-func DBKeyUserWallet(userID int64) string {
+func DBKeyUserWallet(userID string) string {
 	return fmt.Sprintf("user_wallet:%d", userID)
 }
 
-func DBKeyBoostExist(userID int64, source string) string {
+func DBKeyBoostExist(userID string, source string) string {
 	return fmt.Sprintf("boost:exist:%d:%s", userID, source)
 }
 
@@ -218,7 +220,7 @@ func DBKeyPartner(slug string) string {
 	return fmt.Sprintf("partner:%s", slug)
 }
 
-func DBKeyUserJoined(userID int64, refCode int64, minGem int) string {
+func DBKeyUserJoined(userID string, refCode string, minGem int) string {
 	return fmt.Sprintf("user_joined:%s:%d:%d", userID, refCode, minGem)
 }
 
@@ -226,11 +228,11 @@ func DBKeyUserByRefCode(refCode string) string {
 	return fmt.Sprintf("user:by_ref_code:%s", refCode)
 }
 
-func DBKeyUserAvailableReward(userID int64) string {
+func DBKeyUserAvailableReward(userID string) string {
 	return fmt.Sprintf("user:available_rewards:%d", userID)
 }
 
-func LimitKeyUserSocialTask(userID int64) string {
+func LimitKeyUserSocialTask(userID string) string {
 	return fmt.Sprintf("users:social_task:%d", userID)
 }
 
@@ -250,6 +252,6 @@ func DBKeyArenaByGameSlug(gameSlug string) string {
 	return fmt.Sprintf("arena:game_slug:%s", gameSlug)
 }
 
-func DBKeyFriendCount(userID int64) string {
+func DBKeyFriendCount(userID string) string {
 	return fmt.Sprintf("friend_count:%d", userID)
 }

@@ -8,7 +8,7 @@ import (
 
 type UserWallet struct {
 	bun.BaseModel `bun:"table:user_wallet"`
-	ID            int64     `bun:"id,pk" json:"id"`
+	ID            string     `bun:"id,pk" json:"id"`
 	EVMWallet     *string   `bun:"evm_wallet" json:"evm_wallet"`
 	TONWallet     *string   `bun:"ton_wallet" json:"ton_wallet"`
 	CreatedAt     time.Time `bun:"created_at" json:"created_at"`

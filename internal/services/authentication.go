@@ -1,10 +1,19 @@
 package services
 
 import (
+	"encoding/json"
+	"errors"
 	"millionaire/internal/models"
+	"os"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
+
+type CustomClaims struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
 
 type Authentication struct {
 	secret string
@@ -31,23 +40,27 @@ func (authentication *Authentication) CreateToken(user *models.UserFromAuth) (st
 }
 
 func (authentication *Authentication) Validate(token string) (*models.UserFromAuth, error) {
-	// err := initdata.Validate(dataStr, bot.token, 0)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	println("token xxx", token)
 
-	// claims, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte(authentication.secret), nil
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	}
+	jwtToken, err := jwt.ParseWithClaims(token, &CustomClaims{}, keyFunc)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := jwtToken.Claims.(*CustomClaims)
+	if !ok {
+		return nil, errors.New("invalid token claims")
+	}
+
+	b, _ := json.MarshalIndent(claims, "", "    ")
+	println("claims", string(b))
 
 	return &models.UserFromAuth{
-		// ID:           data.User.ID,
-		// Username:     data.User.Username,
+		ID:           claims.ID,
+		Username:     claims.Username,
 		// FirstName:    data.User.FirstName,
 		// LastName:     data.User.LastName,
 		// IsBot:        data.User.IsBot,

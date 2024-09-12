@@ -129,6 +129,7 @@ func (service *ServiceGame) FindOrCreateSession(ctx context.Context, gameSlug st
 		return nil, err
 	}
 
+	println("user id", user.ID)
 	mutex := service.rs.NewMutex(LockKeyUserGameSession(game.Slug, user.ID))
 	if err := mutex.Lock(); err != nil {
 		return nil, errorx.Wrap(ErrGameSessionLock, errorx.Invalid)
@@ -1111,7 +1112,7 @@ func (service *ServiceGame) getReduceTimePerBoost(ctx context.Context, gameSlug 
 	return reduceTime
 }
 
-//func (service *ServiceGame) getLifelineHistory(ctx context.Context, userId int64) ([]models.LifelineHistory, error) {
+//func (service *ServiceGame) getLifelineHistory(ctx context.Context, userID string) ([]models.LifelineHistory, error) {
 //}
 
 func (service *ServiceGame) useLifeline(ctx context.Context, user *models.User, action string) error {

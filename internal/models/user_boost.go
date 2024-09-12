@@ -9,7 +9,7 @@ import (
 type UserBoost struct {
 	bun.BaseModel `bun:"table:user_boost"`
 	ID            int        `bun:"id,pk,autoincrement" json:"id"`
-	UserID        int64      `bun:"user_id" json:"user_id"`
+	UserID        string     `bun:"user_id" json:"user_id"`
 	UsedAt        *time.Time `bun:"used_at" json:"used_at"`
 	CreatedAt     time.Time  `bun:"created_at,default:current_timestamp" json:"created_at"`
 	Source        string     `bun:"source" json:"source"`

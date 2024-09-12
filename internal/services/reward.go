@@ -63,7 +63,7 @@ func NewServiceReward(container *do.Injector) (*ServiceReward, error) {
 	return &ServiceReward{container, dbRedis, dbRedisCache, rs, postgresDB, readonlyPostgresDB, cache, readonlyCache}, nil
 }
 
-func (service *ServiceReward) GetAvailableRewardByUserID(ctx context.Context, userID int64) ([]models.Reward, error) {
+func (service *ServiceReward) GetAvailableRewardByUserID(ctx context.Context, userID string) ([]models.Reward, error) {
 	callback := func() ([]models.Reward, error) {
 		rewards, err := datastore.GetAvaiableRewardByUserID(context.Background(), service.postgresDB, userID)
 		if err == sql.ErrNoRows {
@@ -83,6 +83,6 @@ func (service *ServiceReward) ClaimReward(ctx context.Context, rewardID int) err
 	return datastore.ClaimReward(ctx, service.postgresDB, rewardID)
 }
 
-func (service *ServiceReward) ClearUserAvailableRewardCache(ctx context.Context, userID int64) error {
+func (service *ServiceReward) ClearUserAvailableRewardCache(ctx context.Context, userID string) error {
 	return service.cache.Delete(ctx, DBKeyUserAvailableReward(userID))
 }

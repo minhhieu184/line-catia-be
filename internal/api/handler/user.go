@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"millionaire/internal/models"
 	"millionaire/internal/services"
 	"os"
@@ -38,9 +37,6 @@ func (gr *groupUser) Me(c echo.Context) error {
 	if err != nil {
 		return httpx.RestAbort(c, nil, err)
 	}
-
-	b, _ := json.MarshalIndent(user, "", "    ")
-	println("skdjncjid", string(b))
 
 	claims := &services.CustomClaims{
 		ID:       user.ID,

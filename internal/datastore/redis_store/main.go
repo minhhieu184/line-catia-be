@@ -119,7 +119,7 @@ func AddQuestionsToGroup(ctx context.Context, cmd redis.Cmdable, gameSlug string
 		return err
 	}
 
-	return cmd.Expire(ctx, dbKeyQuestionGroup(gameSlug, group), time.Hour).Err()
+	return cmd.Expire(ctx, dbKeyQuestionGroup(gameSlug, group), time.Hour * 1000).Err()
 }
 
 func DeleteGameQuestionGroups(ctx context.Context, cmd redis.UniversalClient, gameSlug string) error {

@@ -889,6 +889,10 @@ func (service *ServiceGame) canAnswer(ctx context.Context, user *models.User, us
 	return nil
 }
 
+// func (service *ServiceGame) GetGames(ctx context.Context) ([]models.Game, error) {
+// 	return datastore.GetEnabledGames(ctx, service.postgresDB)
+// }
+
 func (service *ServiceGame) GetGames(ctx context.Context) ([]models.Game, error) {
 	callback := func() ([]models.Game, error) {
 		return datastore.GetEnabledGames(ctx, service.postgresDB)

@@ -299,7 +299,7 @@ func GetUserFriendListPaging(ctx context.Context, db *bun.DB, userID string, lim
 		ColumnExpr("ur.id, ur.first_name, ur.last_name, ur.username, us.gems, (us.gems IS NOT NULL AND us.gems > 15) as validated, ub.id is not null as claimed").TableExpr("\"user\" ur").
 		Join("LEFT JOIN (SELECT u.id, SUM(ug.gems) gems FROM \"user\" u LEFT JOIN user_gem ug ON u.id = ug.user_id WHERE ug.user_id IN (SELECT u.id FROM \"user\" u WHERE u.inviter_id=?) GROUP BY u.id) us ON ur.id = us.id", userID).
 		Join("LEFT JOIN user_boost ub ON ur.inviter_id = ub.user_id AND ur.id::varchar = ub.source").
-		Where("ur.inviter_id = '?'", userID).
+		Where("ur.inviter_id = ?", userID).
 		Where("us.gems >= 5").
 		Order("validated desc").
 		Order("claimed").
@@ -321,7 +321,7 @@ func GetOnlyClaimableFriends(ctx context.Context, db *bun.DB, userID string) ([]
 		ColumnExpr("ur.id, ur.first_name, ur.last_name, ur.username, us.gems").TableExpr("\"user\" ur").
 		Join("LEFT JOIN (SELECT u.id, SUM(ug.gems) gems FROM \"user\" u LEFT JOIN user_gem ug ON u.id = ug.user_id WHERE ug.user_id IN (SELECT u.id FROM \"user\" u WHERE u.inviter_id=?) GROUP BY u.id) us ON ur.id = us.id", userID).
 		Join("LEFT JOIN user_boost ub ON ur.inviter_id = ub.user_id AND ur.id::varchar = ub.source").
-		Where("ur.inviter_id = '?'", userID).
+		Where("ur.inviter_id = ?", userID).
 		Where("us.gems > 15").
 		Where("ub.id is null").
 		Scan(ctx, &friends)
@@ -337,7 +337,7 @@ func CountFriends(ctx context.Context, db *bun.DB, userID string) (int, error) {
 		ColumnExpr("ur.id, ur.first_name, ur.last_name, ur.username, us.gems, (us.gems IS NOT NULL AND us.gems > 15) as validated, ub.id is not null as claimed").TableExpr("\"user\" ur").
 		Join("LEFT JOIN (SELECT u.id, SUM(ug.gems) gems FROM \"user\" u LEFT JOIN user_gem ug ON u.id = ug.user_id WHERE ug.user_id IN (SELECT u.id FROM \"user\" u WHERE u.inviter_id=?) GROUP BY u.id) us ON ur.id = us.id", userID).
 		Join("LEFT JOIN user_boost ub ON ur.inviter_id = ub.user_id AND ur.id::varchar = ub.source").
-		Where("ur.inviter_id = '?'", userID).
+		Where("ur.inviter_id = ?", userID).
 		Where("us.gems >= 5").
 		Count(ctx)
 
